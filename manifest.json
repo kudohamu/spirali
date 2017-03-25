@@ -1,0 +1,10 @@
+{
+    "dependencies": {
+        "github.com/stretchr/testify": {
+            "version": "v1.1.4"
+        },
+        "github.com/urfave/cli": {
+            "branch": "master"
+        }
+    }
+}
