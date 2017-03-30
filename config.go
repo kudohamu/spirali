@@ -1,9 +1,7 @@
 package spirali
 
 import (
-	"errors"
 	"io"
-	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -40,11 +38,7 @@ func (c *Config) WithEnv(env string) error {
 			return nil
 		}
 	}
-	return errors.New(strings.Join([]string{
-		"`",
-		env,
-		"` not found in config",
-	}, ""))
+	return ErrEnvNotFound
 }
 
 // WithDir is ...

@@ -1,15 +1,6 @@
 package spirali
 
-import (
-	"errors"
-
-	"github.com/kudohamu/spirali/internal/driver"
-)
-
-// Various errors the driver might return.
-var (
-	ErrUnknownDriver = errors.New("unknown driver")
-)
+import "github.com/kudohamu/spirali/internal/driver"
 
 // Driver is interface of database driver.
 type Driver interface {
