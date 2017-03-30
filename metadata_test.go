@@ -38,4 +38,30 @@ func TestMetaData(t *testing.T) {
 			assert.Nil(t, m)
 		})
 	})
+
+	t.Run("Save", func(t *testing.T) {
+		m := &MetaData{
+			Migrations: Migrations{
+				&Migration{
+					Version: 1,
+					Name:    "foo",
+				},
+				&Migration{
+					Version: 2,
+					Name:    "bar",
+				},
+				&Migration{
+					Version: 3,
+					Name:    "baz",
+				},
+			},
+		}
+
+		expect := `{"migrations":[{"version":1,"name":"foo"},{"version":2,"name":"bar"},{"version":3,"name":"baz"}]}`
+
+		var buf bytes.Buffer
+		err := m.Save(&buf)
+		assert.NoError(t, err)
+		assert.Equal(t, expect, buf.String())
+	})
 }
