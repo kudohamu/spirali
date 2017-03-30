@@ -15,19 +15,20 @@ func TestMigration(t *testing.T) {
 		cases := []struct {
 			time          time.Time
 			name          string
-			expectVersion string
+			expectVersion uint64
 			expectName    string
 		}{
 			{
 				time:          testTime,
 				name:          "create_test_table",
-				expectVersion: "20170102030405",
+				expectVersion: 20170102030405,
 				expectName:    "create_test_table",
 			},
 		}
 		for _, c := range cases {
-			m := NewMigration(c.time, c.name)
+			m, err := NewMigration(c.time, c.name)
 
+			assert.Nil(t, err)
 			assert.Equal(t, c.expectVersion, m.Version)
 			assert.Equal(t, c.expectName, m.Name)
 		}
@@ -35,12 +36,12 @@ func TestMigration(t *testing.T) {
 
 	t.Run("GetUpFileName", func(t *testing.T) {
 		cases := []struct {
-			version string
+			version uint64
 			name    string
 			expect  string
 		}{
 			{
-				version: "20170101010101",
+				version: 20170101010101,
 				name:    "create_test_table",
 				expect:  "20170101010101_create_test_table_up.sql",
 			},
@@ -57,12 +58,12 @@ func TestMigration(t *testing.T) {
 
 	t.Run("GetDownFileName", func(t *testing.T) {
 		cases := []struct {
-			version string
+			version uint64
 			name    string
 			expect  string
 		}{
 			{
-				version: "20170101010101",
+				version: 20170101010101,
 				name:    "create_test_table",
 				expect:  "20170101010101_create_test_table_down.sql",
 			},

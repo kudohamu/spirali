@@ -30,6 +30,12 @@ func main() {
 			Usage:   "create migration file for `up` and `down`",
 			Action:  Create,
 		},
+		cli.Command{
+			Name:    "up",
+			Aliases: []string{"u"},
+			Usage:   "applied migrations",
+			Action:  Up,
+		},
 	}
 
 	app.Run(os.Args)
@@ -54,6 +60,51 @@ func initializeMetaDataFileIfNotExist(dir string) error {
 		return err
 	}
 	if _, err := file.Write(b); err != nil {
+		return err
+	}
+	return nil
+}
+
+func openConfig(dir string) (*spirali.Config, error) {
+	p := filepath.Join(dir, spirali.ConfigFileName)
+
+	file, err := os.Open(p)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	c, err := spirali.ReadConfig(file)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func readMetaData(dir string) (*spirali.MetaData, error) {
+	p := filepath.Join(dir, spirali.MetaDataFileName)
+	file, err := os.Open(p)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	m, err := spirali.ReadMetaData(file)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func updateMetaData(m *spirali.MetaData, dir string) error {
+	p := filepath.Join(dir, spirali.MetaDataFileName)
+	file, err := os.Create(p)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if err := m.Save(file); err != nil {
 		return err
 	}
 	return nil

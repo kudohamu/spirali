@@ -10,7 +10,7 @@ const MetaDataFileName = "metadata.json"
 
 // MetaData of migration
 type MetaData struct {
-	Migrations []string `json:"migrations"`
+	Migrations Migrations `json:"migrations"`
 }
 
 // ReadMetaData is read metadata of migration from io.Reader.
@@ -20,13 +20,8 @@ func ReadMetaData(r io.Reader) (*MetaData, error) {
 	if err := decoder.Decode(&m); err != nil {
 		return nil, err
 	}
+	m.Migrations.sort()
 	return &m, nil
-}
-
-// AddMigration is add up and down migration files to metadata file.
-func (m *MetaData) AddMigration(upFileName, downFileName string) {
-	m.Migrations = append(m.Migrations, upFileName)
-	m.Migrations = append(m.Migrations, downFileName)
 }
 
 // Save is update metadata file.

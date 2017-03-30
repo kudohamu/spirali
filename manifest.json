@@ -1,5 +1,8 @@
 {
     "dependencies": {
+        "github.com/BurntSushi/toml": {
+            "version": "v0.2.0"
+        },
         "github.com/stretchr/testify": {
             "version": "v1.1.4"
         },

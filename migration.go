@@ -1,6 +1,9 @@
 package spirali
 
 import (
+	"io"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -9,16 +12,23 @@ const ext = "sql"
 
 // Migration is ...
 type Migration struct {
-	Version string
-	Name    string
+	Version uint64 `json:"version"`
+	Name    string `json:"name"`
 }
 
+// Migrations is array of migration.
+type Migrations []*Migration
+
 // NewMigration initialize migration struct.
-func NewMigration(t time.Time, name string) *Migration {
-	return &Migration{
-		Version: t.Format("20060102150405"),
-		Name:    name,
+func NewMigration(t time.Time, name string) (*Migration, error) {
+	v, err := strconv.ParseUint(t.Format("20060102150405"), 10, 64)
+	if err != nil {
+		return nil, err
 	}
+	return &Migration{
+		Version: v,
+		Name:    name,
+	}, nil
 }
 
 // GetUpFileName generate file name for applied migration.
@@ -33,8 +43,48 @@ func (m *Migration) GetDownFileName() string {
 
 func (m *Migration) getFileName(suffix string) string {
 	return strings.Join([]string{
-		m.Version,
+		strconv.FormatUint(m.Version, 10),
 		m.Name,
 		strings.Join([]string{suffix, ext}, "."),
 	}, "_")
+}
+
+// Up is ...
+func (ms Migrations) Up(driver Driver, currentVersion uint64, readable Readable) error {
+	ms.sort()
+
+	for _, m := range ms {
+		if currentVersion == 0 || currentVersion < m.Version {
+			b, err := readable.Read(m.GetUpFileName())
+			if err != nil {
+				return err
+			}
+			if err := driver.Exec(string(b)); err != nil {
+				return err
+			}
+			if err := driver.SetVersion(m.Version); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// Sort ...
+func (ms Migrations) sort() {
+	sort.SliceStable(ms, func(i int, j int) bool {
+		return ms[i].Version < ms[j].Version
+	})
+}
+
+func writeUpTemplate(w io.Writer) {
+	io.WriteString(w, `
+-- write SQL for applying this migration.
+`)
+}
+
+func writeDownTemplate(w io.Writer) {
+	io.WriteString(w, `
+-- write SQL for rolling back this migration.
+`)
 }

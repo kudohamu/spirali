@@ -2,16 +2,19 @@ package spirali
 
 import (
 	"bufio"
-	"io"
 	"os"
 	"path/filepath"
 	"time"
 )
 
-// Create generate new migration files.
+// Create generates new migration files.
 func Create(name string, dir string) (*Migration, error) {
 	t := time.Now()
-	m := NewMigration(t, name)
+	m, err := NewMigration(t, name)
+	if err != nil {
+		return nil, err
+	}
+
 	upfile, err := os.Create(filepath.Join(dir, m.GetUpFileName()))
 	if err != nil {
 		return nil, err
@@ -19,7 +22,7 @@ func Create(name string, dir string) (*Migration, error) {
 	defer upfile.Close()
 	upWriter := bufio.NewWriter(upfile)
 	defer upWriter.Flush()
-	WriteUpTemplate(upWriter)
+	writeUpTemplate(upWriter)
 
 	downfile, err := os.Create(filepath.Join(dir, m.GetDownFileName()))
 	if err != nil {
@@ -28,21 +31,36 @@ func Create(name string, dir string) (*Migration, error) {
 	defer downfile.Close()
 	downWriter := bufio.NewWriter(downfile)
 	defer downWriter.Flush()
-	WriteDownTemplate(downWriter)
+	writeDownTemplate(downWriter)
 
 	return m, nil
 }
 
-// WriteUpTemplate is ...
-func WriteUpTemplate(w io.Writer) {
-	io.WriteString(w, `
--- write SQL for applying this migration.
-`)
-}
+// Up applies migrations.
+func Up(metadata *MetaData, config *Config, driver Driver, readable Readable) error {
 
-// WriteDownTemplate is ...
-func WriteDownTemplate(w io.Writer) {
-	io.WriteString(w, `
--- write SQL for rolling back this migration.
-`)
+	if err := driver.Open(config.Dsn()); err != nil {
+		return err
+	}
+	defer driver.Close()
+
+	if err := driver.Transaction(func() error {
+		if err := driver.CreateVersionTableIfNotExists(); err != nil {
+			return err
+		}
+
+		version, err := driver.GetCurrentVersion()
+		if err != nil {
+			return err
+		}
+		if err := metadata.Migrations.Up(driver, version, readable); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -2,6 +2,14 @@
     "memo": "cc7df209ebb5355833f17b2186a409b95cfacfd4802928afe52fbd35dc0fa57f",
     "projects": [
         {
+            "name": "github.com/BurntSushi/toml",
+            "version": "v0.2.0",
+            "revision": "bbd5bb678321a0d6e58f1099321dfa73391c1b6f",
+            "packages": [
+                "."
+            ]
+        },
+        {
             "name": "github.com/davecgh/go-spew",
             "version": "v1.1.0",
             "revision": "346938d642f2ec3594ed81d874461961cd0faa76",
