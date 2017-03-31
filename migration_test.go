@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kudohamu/spirali/internal/driver"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,4 +78,43 @@ func TestMigration(t *testing.T) {
 			assert.Equal(t, c.expect, m.GetDownFileName())
 		}
 	})
+
+	t.Run("Up", func(t *testing.T) {
+		ms := Migrations{
+			&Migration{Version: 2, Name: "foo"},
+			&Migration{Version: 1, Name: "bar"},
+			&Migration{Version: 3, Name: "baz"},
+		}
+		readable := &nopReadable{}
+
+		t.Run("when current version is 0", func(t *testing.T) {
+			driver := &driver.TDriver{
+				Created:  true,
+				Versions: []uint64{},
+			}
+			version := uint64(0)
+			err := ms.Up(driver, version, readable)
+			assert.NoError(t, err)
+			assert.Equal(t, []uint64{1, 2, 3}, driver.Versions)
+			assert.Equal(t, 3, driver.CountOfExec)
+		})
+
+		t.Run("when current version is not 0", func(t *testing.T) {
+			driver := &driver.TDriver{
+				Created:  true,
+				Versions: []uint64{1, 2},
+			}
+			version := uint64(2)
+			err := ms.Up(driver, version, readable)
+			assert.NoError(t, err)
+			assert.Equal(t, []uint64{1, 2, 3}, driver.Versions)
+			assert.Equal(t, 1, driver.CountOfExec)
+		})
+	})
+}
+
+type nopReadable struct{}
+
+func (nopReadable) Read(path string) ([]byte, error) {
+	return []byte("foo"), nil
 }
