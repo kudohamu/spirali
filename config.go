@@ -9,7 +9,7 @@ import (
 // ConfigFileName ...
 const ConfigFileName = "config.toml"
 
-// Config is ...
+// Config represents the spirali configuration.
 type Config struct {
 	specificConfigs map[string]*specificConfig
 	Env             string
@@ -21,7 +21,7 @@ type specificConfig struct {
 	Dsn    string `toml:"dsn"`
 }
 
-// ReadConfig is ...
+// ReadConfig reads the spirali configuration from io.Reader.
 func ReadConfig(r io.Reader) (*Config, error) {
 	var c Config
 	if _, err := toml.DecodeReader(r, &c.specificConfigs); err != nil {
@@ -30,7 +30,7 @@ func ReadConfig(r io.Reader) (*Config, error) {
 	return &c, nil
 }
 
-// WithEnv is ...
+// WithEnv sets env to config.
 func (c *Config) WithEnv(env string) error {
 	for key := range c.specificConfigs {
 		if key == env {
@@ -41,7 +41,7 @@ func (c *Config) WithEnv(env string) error {
 	return ErrEnvNotFound
 }
 
-// WithDir is ...
+// WithDir sets dir to config.
 func (c *Config) WithDir(dir string) {
 	c.Dir = dir
 }

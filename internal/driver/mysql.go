@@ -21,7 +21,7 @@ func (m *Mysql) Close() error {
 	return m.conn.Close()
 }
 
-// CreateVersionTableIfNotExists ...
+// CreateVersionTableIfNotExists creates schema version table if table does not exist.
 func (m *Mysql) CreateVersionTableIfNotExists() error {
 	query := fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
@@ -50,7 +50,7 @@ func (m *Mysql) DeleteVersion(version uint64) error {
 	return nil
 }
 
-// Exec ...
+// Exec executes query.
 func (m *Mysql) Exec(query string) error {
 	if m.tx != nil {
 		if _, err := m.tx.Exec(query); err != nil {
@@ -93,7 +93,7 @@ func (m *Mysql) Open(dsn string) error {
 	return nil
 }
 
-// SetVersion is ...
+// SetVersion appends new version.
 func (m *Mysql) SetVersion(version uint64) error {
 	query := fmt.Sprintf(`
 		INSERT INTO %s (version) VALUES (%d)
@@ -105,7 +105,8 @@ func (m *Mysql) SetVersion(version uint64) error {
 	return nil
 }
 
-// Transaction is ...
+// Transaction executes a function atomically.
+// Roll back the process if function returns error.
 func (m *Mysql) Transaction(fn func() error) error {
 	m.locker.Lock()
 	defer m.locker.Unlock()
