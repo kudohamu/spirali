@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const ext = "sql"
@@ -20,8 +19,8 @@ type Migration struct {
 type Migrations []*Migration
 
 // NewMigration initialize migration struct.
-func NewMigration(t time.Time, name string) (*Migration, error) {
-	v, err := strconv.ParseUint(t.Format("20060102150405"), 10, 64)
+func NewMigration(vg VersionG, name string) (*Migration, error) {
+	v, err := vg.GenerateNextVersion()
 	if err != nil {
 		return nil, err
 	}

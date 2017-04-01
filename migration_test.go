@@ -2,32 +2,29 @@ package spirali
 
 import (
 	"testing"
-	"time"
 
 	"github.com/kudohamu/spirali/internal/driver"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMigration(t *testing.T) {
-	testTime, _ := time.Parse("2006-01-02 15:04:05", "2017-01-02 03:04:05")
-
 	t.Run("NewMigration", func(t *testing.T) {
 
 		cases := []struct {
-			time          time.Time
+			generator     VersionG
 			name          string
 			expectVersion uint64
 			expectName    string
 		}{
 			{
-				time:          testTime,
+				generator:     &IncrementalVersionG{CurrentVersion: 1},
 				name:          "create_test_table",
-				expectVersion: 20170102030405,
+				expectVersion: 2,
 				expectName:    "create_test_table",
 			},
 		}
 		for _, c := range cases {
-			m, err := NewMigration(c.time, c.name)
+			m, err := NewMigration(c.generator, c.name)
 
 			assert.Nil(t, err)
 			assert.Equal(t, c.expectVersion, m.Version)

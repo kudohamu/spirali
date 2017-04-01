@@ -4,13 +4,11 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 // Create generates new migration files.
-func Create(name string, dir string) (*Migration, error) {
-	t := time.Now()
-	m, err := NewMigration(t, name)
+func Create(vg VersionG, name string, dir string) (*Migration, error) {
+	m, err := NewMigration(vg, name)
 	if err != nil {
 		return nil, err
 	}

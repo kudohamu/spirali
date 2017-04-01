@@ -34,8 +34,9 @@ func Create(c *cli.Context) {
 	if err := initializeMetaDataFileIfNotExist(dir); err != nil {
 		panic(err)
 	}
+	vg := &spirali.TimestampBasedVersionG{}
 
-	m, err := spirali.Create(name, dir)
+	m, err := spirali.Create(vg, name, dir)
 	if err != nil {
 		panic(err)
 	}
