@@ -8,12 +8,12 @@ import (
 // MetaDataFileName ...
 const MetaDataFileName = "metadata.json"
 
-// MetaData of migration
+// MetaData of migration.
 type MetaData struct {
 	Migrations Migrations `json:"migrations"`
 }
 
-// ReadMetaData is read metadata of migration from io.Reader.
+// ReadMetaData reads the metadata of migration from io.Reader.
 func ReadMetaData(r io.Reader) (*MetaData, error) {
 	decoder := json.NewDecoder(r)
 	var m MetaData
@@ -24,7 +24,7 @@ func ReadMetaData(r io.Reader) (*MetaData, error) {
 	return &m, nil
 }
 
-// Save is update metadata file.
+// Save updates the metadata file.
 func (m *MetaData) Save(w io.Writer) error {
 	b, err := json.Marshal(&m)
 	if err != nil {

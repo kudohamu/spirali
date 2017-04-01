@@ -111,6 +111,48 @@ func TestMigration(t *testing.T) {
 			assert.Equal(t, 1, driver.CountOfExec)
 		})
 	})
+
+	t.Run("Down", func(t *testing.T) {
+		ms := Migrations{
+			&Migration{Version: 2, Name: "foo"},
+			&Migration{Version: 1, Name: "bar"},
+			&Migration{Version: 3, Name: "baz"},
+		}
+		readable := &nopReadable{}
+
+		t.Run("when current version is 0", func(t *testing.T) {
+			driver := &driver.TDriver{
+				Created:  true,
+				Versions: []uint64{},
+			}
+			err := ms.Down(driver, readable)
+			assert.Error(t, err)
+			assert.Equal(t, ErrSchemaVersionIsZero, err)
+		})
+
+		t.Run("when migration files do not exist", func(t *testing.T) {
+			ms := Migrations{}
+
+			driver := &driver.TDriver{
+				Created:  true,
+				Versions: []uint64{},
+			}
+			err := ms.Down(driver, readable)
+			assert.Error(t, err)
+			assert.Equal(t, ErrMigrationsNotExist, err)
+		})
+
+		t.Run("when valid state", func(t *testing.T) {
+			driver := &driver.TDriver{
+				Created:  true,
+				Versions: []uint64{1, 2},
+			}
+			err := ms.Down(driver, readable)
+			assert.NoError(t, err)
+			assert.Equal(t, []uint64{1}, driver.Versions)
+			assert.Equal(t, 1, driver.CountOfExec)
+		})
+	})
 }
 
 type nopReadable struct{}

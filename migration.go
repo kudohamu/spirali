@@ -49,7 +49,7 @@ func (m *Migration) getFileName(suffix string) string {
 	}, "_")
 }
 
-// Up is ...
+// Up applies migrations not applied.
 func (ms Migrations) Up(driver Driver, currentVersion uint64, readable Readable) error {
 	ms.sort()
 
@@ -70,7 +70,42 @@ func (ms Migrations) Up(driver Driver, currentVersion uint64, readable Readable)
 	return nil
 }
 
-// Sort ...
+// Down rolls back the latest migration.
+func (ms Migrations) Down(driver Driver, readable Readable) error {
+	ms.sort()
+
+	if len(ms) == 0 {
+		return ErrMigrationsNotExist
+	}
+
+	version, err := driver.GetCurrentVersion()
+	if err != nil {
+		return err
+	}
+	if version == 0 {
+		return ErrSchemaVersionIsZero
+	}
+
+	for _, m := range ms {
+		if version == m.Version {
+			b, err := readable.Read(m.GetDownFileName())
+			if err != nil {
+				return err
+			}
+			if err := driver.Exec(string(b)); err != nil {
+				return err
+			}
+			if err := driver.DeleteVersion(version); err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+
+	return ErrMigrationFileNotFound
+}
+
 func (ms Migrations) sort() {
 	sort.SliceStable(ms, func(i int, j int) bool {
 		return ms[i].Version < ms[j].Version

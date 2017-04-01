@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql" //use mysql
+	"github.com/k0kubun/pp"
 )
 
 // Mysql is one of driver impls.
@@ -30,6 +31,18 @@ func (m *Mysql) CreateVersionTableIfNotExists() error {
 		  PRIMARY KEY (id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `, schemaManagementTableName)
+
+	if err := m.Exec(query); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteVersion deletes version column from database.
+func (m *Mysql) DeleteVersion(version uint64) error {
+	query := fmt.Sprintf(`
+		DELETE FROM %s WHERE version = %d
+	`, schemaManagementTableName, version)
 
 	if err := m.Exec(query); err != nil {
 		return err
@@ -86,7 +99,7 @@ func (m *Mysql) SetVersion(version uint64) error {
 		INSERT INTO %s (version) VALUES (%d)
   `, schemaManagementTableName, version)
 
-	if _, err := m.tx.Exec(query); err != nil {
+	if err := m.Exec(query); err != nil {
 		return err
 	}
 	return nil
@@ -104,14 +117,14 @@ func (m *Mysql) Transaction(fn func() error) error {
 	m.tx = tx
 
 	if err := fn(); err != nil {
-		if e := tx.Rollback(); e != nil {
+		pp.Println(err)
+		if e := m.tx.Rollback(); e != nil {
 			return e
 		}
 		return err
 	}
-
-	if err := tx.Commit(); err != nil {
-		if e := tx.Rollback(); e != nil {
+	if err := m.tx.Commit(); err != nil {
+		if e := m.tx.Rollback(); e != nil {
 			return e
 		}
 		return err

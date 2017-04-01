@@ -33,8 +33,14 @@ func main() {
 		cli.Command{
 			Name:    "up",
 			Aliases: []string{"u"},
-			Usage:   "applied migrations",
+			Usage:   "apply migrations",
 			Action:  Up,
+		},
+		cli.Command{
+			Name:    "down",
+			Aliases: []string{"d"},
+			Usage:   "rollback the latest migration",
+			Action:  Down,
 		},
 	}
 

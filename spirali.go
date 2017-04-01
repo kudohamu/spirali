@@ -36,7 +36,7 @@ func Create(name string, dir string) (*Migration, error) {
 	return m, nil
 }
 
-// Up applies migrations.
+// Up applies migrations not applied.
 func Up(metadata *MetaData, config *Config, driver Driver, readable Readable) error {
 
 	if err := driver.Open(config.Dsn()); err != nil {
@@ -57,6 +57,28 @@ func Up(metadata *MetaData, config *Config, driver Driver, readable Readable) er
 			return err
 		}
 
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Down rolls back the latest migration.
+func Down(metadata *MetaData, config *Config, driver Driver, readable Readable) error {
+	if err := driver.Open(config.Dsn()); err != nil {
+		return err
+	}
+	defer driver.Close()
+
+	if err := driver.Transaction(func() error {
+		if err := driver.CreateVersionTableIfNotExists(); err != nil {
+			return err
+		}
+		if err := metadata.Migrations.Down(driver, readable); err != nil {
+			return err
+		}
 		return nil
 	}); err != nil {
 		return err

@@ -6,6 +6,7 @@ import "github.com/kudohamu/spirali/internal/driver"
 type Driver interface {
 	Close() error
 	CreateVersionTableIfNotExists() error
+	DeleteVersion(version uint64) error
 	Exec(query string) error
 	GetCurrentVersion() (uint64, error)
 	Open(dsn string) error

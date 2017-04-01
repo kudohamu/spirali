@@ -51,6 +51,18 @@ func (td *TDriver) SetVersion(version uint64) error {
 	return nil
 }
 
+// DeleteVersion ...
+func (td *TDriver) DeleteVersion(version uint64) error {
+	var vs []uint64
+	for _, v := range td.Versions {
+		if v != version {
+			vs = append(vs, v)
+		}
+	}
+	td.Versions = vs
+	return nil
+}
+
 // Transaction ...
 func (td *TDriver) Transaction(fn func() error) error {
 	td.locker.Lock()
