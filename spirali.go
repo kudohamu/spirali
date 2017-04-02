@@ -2,36 +2,39 @@ package spirali
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"path/filepath"
 )
 
 // Create generates new migration files.
-func Create(vg VersionG, name string, dir string) (*Migration, error) {
+func Create(vg VersionG, name string, config *Config, metadata *MetaData) (*MetaData, error) {
 	m, err := NewMigration(vg, name)
 	if err != nil {
 		return nil, err
 	}
 
-	upfile, err := os.Create(filepath.Join(dir, m.GetUpFileName()))
+	upfile, err := os.Create(filepath.Join(config.Dir(), m.GetUpFileName()))
 	if err != nil {
 		return nil, err
 	}
 	defer upfile.Close()
 	upWriter := bufio.NewWriter(upfile)
 	defer upWriter.Flush()
-	writeUpTemplate(upWriter)
+	io.WriteString(upWriter, "-- write SQL for applying this migration.")
 
-	downfile, err := os.Create(filepath.Join(dir, m.GetDownFileName()))
+	downfile, err := os.Create(filepath.Join(config.Dir(), m.GetDownFileName()))
 	if err != nil {
 		return nil, err
 	}
 	defer downfile.Close()
 	downWriter := bufio.NewWriter(downfile)
 	defer downWriter.Flush()
-	writeDownTemplate(downWriter)
+	io.WriteString(downWriter, "-- write SQL for rolling back this migration.")
 
-	return m, nil
+	metadata.Migrations = append(metadata.Migrations, m)
+
+	return metadata, nil
 }
 
 // Up applies migrations not applied.

@@ -21,31 +21,44 @@ func Create(c *cli.Context) {
 		}
 	}()
 
+	// check options.
 	name := c.Args().First()
 	if name == "" {
 		panic(errors.New("base file name is missing"))
 	}
-	dir := c.GlobalString("path")
-	if dir == "" {
+	configPath := c.GlobalString("path")
+	if configPath == "" {
 		panic(errors.New("path is missing"))
 	}
-	dir = path.Clean(dir)
+	configPath = path.Clean(configPath)
+	env := c.GlobalString("env")
+	if env == "" {
+		panic(errors.New("env is missing"))
+	}
 
-	if err := initializeMetaDataFileIfNotExist(dir); err != nil {
+	// setup.
+	config, err := openConfig(configPath)
+	if err != nil {
+		panic(err)
+	}
+	if e := config.WithEnv(env); e != nil {
+		panic(e)
+	}
+	if err := initializeMetaDataFileIfNotExist(config); err != nil {
+		panic(err)
+	}
+	metadata, err := readMetaData(config)
+	if err != nil {
 		panic(err)
 	}
 	vg := &spirali.TimestampBasedVersionG{}
 
-	m, err := spirali.Create(vg, name, dir)
+	// try to create migration files.
+	newMetaData, err := spirali.Create(vg, name, config, metadata)
 	if err != nil {
 		panic(err)
 	}
-	metadata, err := readMetaData(dir)
-	if err != nil {
-		panic(err)
-	}
-	metadata.Migrations = append(metadata.Migrations, m)
-	if err := updateMetaData(metadata, dir); err != nil {
+	if err := updateMetaData(newMetaData, config); err != nil {
 		panic(err)
 	}
 }

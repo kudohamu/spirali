@@ -2,23 +2,23 @@ package spirali
 
 import (
 	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
-
-// ConfigFileName ...
-const ConfigFileName = "config.toml"
 
 // Config represents the spirali configuration.
 type Config struct {
 	specificConfigs map[string]*specificConfig
 	Env             string
-	Dir             string
+	Path            string
 }
 
 type specificConfig struct {
 	Driver string `toml:"driver"`
 	Dsn    string `toml:"dsn"`
+	Dir    string `toml:"directory"`
 }
 
 // ReadConfig reads the spirali configuration from io.Reader.
@@ -41,9 +41,9 @@ func (c *Config) WithEnv(env string) error {
 	return ErrEnvNotFound
 }
 
-// WithDir sets dir to config.
-func (c *Config) WithDir(dir string) {
-	c.Dir = dir
+// WithPath sets path to config.
+func (c *Config) WithPath(path string) {
+	c.Path = path
 }
 
 // Driver returns driver of current env.
@@ -54,4 +54,10 @@ func (c *Config) Driver() string {
 // Dsn returns dsn of current env.
 func (c *Config) Dsn() string {
 	return c.specificConfigs[c.Env].Dsn
+}
+
+// Dir returns migration files directory.
+func (c *Config) Dir() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, c.specificConfigs[c.Env].Dir)
 }

@@ -2,6 +2,8 @@ package spirali
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -73,17 +75,17 @@ prod:
 		}
 	})
 
-	t.Run("WithDir", func(t *testing.T) {
+	t.Run("WithPath", func(t *testing.T) {
 		cases := []struct {
-			dir string
+			path string
 		}{
-			{dir: "foo"},
+			{path: "foo"},
 		}
 
 		for _, c := range cases {
 			config := &Config{}
-			config.WithDir(c.dir)
-			assert.Equal(t, c.dir, config.Dir)
+			config.WithPath(c.path)
+			assert.Equal(t, c.path, config.Path)
 		}
 	})
 
@@ -140,6 +142,35 @@ prod:
 		for _, c := range cases {
 			config.WithEnv(c.env)
 			assert.Equal(t, c.expect, config.Dsn())
+		}
+	})
+
+	t.Run("Dir", func(t *testing.T) {
+		config := &Config{
+			specificConfigs: map[string]*specificConfig{
+				"dev":  &specificConfig{Dir: "hoge"},
+				"prod": &specificConfig{Dir: "huga"},
+			},
+		}
+
+		cases := []struct {
+			env    string
+			expect string
+		}{
+			{
+				env:    "dev",
+				expect: "hoge",
+			},
+			{
+				env:    "prod",
+				expect: "huga",
+			},
+		}
+
+		for _, c := range cases {
+			config.WithEnv(c.env)
+			wd, _ := os.Getwd()
+			assert.Equal(t, filepath.Join(wd, c.expect), config.Dir())
 		}
 	})
 }

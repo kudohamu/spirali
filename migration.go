@@ -1,7 +1,6 @@
 package spirali
 
 import (
-	"io"
 	"sort"
 	"strconv"
 	"strings"
@@ -109,16 +108,4 @@ func (ms Migrations) sort() {
 	sort.SliceStable(ms, func(i int, j int) bool {
 		return ms[i].Version < ms[j].Version
 	})
-}
-
-func writeUpTemplate(w io.Writer) {
-	io.WriteString(w, `
--- write SQL for applying this migration.
-`)
-}
-
-func writeDownTemplate(w io.Writer) {
-	io.WriteString(w, `
--- write SQL for rolling back this migration.
-`)
 }

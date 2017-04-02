@@ -12,7 +12,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "spirali"
-	app.Usage = "golang based migration tool"
+	app.Usage = "golang based database migration tool"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "env, e",
@@ -20,7 +20,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "path, p",
-			Usage: "migration dir containing config.yml",
+			Usage: "path for the config file",
 		},
 	}
 	app.Commands = []cli.Command{
@@ -47,8 +47,8 @@ func main() {
 	app.Run(os.Args)
 }
 
-func initializeMetaDataFileIfNotExist(dir string) error {
-	p := filepath.Join(dir, spirali.MetaDataFileName)
+func initializeMetaDataFileIfNotExist(config *spirali.Config) error {
+	p := filepath.Join(config.Dir(), spirali.MetaDataFileName)
 
 	if _, err := os.Stat(p); err == nil {
 		return nil
@@ -71,10 +71,8 @@ func initializeMetaDataFileIfNotExist(dir string) error {
 	return nil
 }
 
-func openConfig(dir string) (*spirali.Config, error) {
-	p := filepath.Join(dir, spirali.ConfigFileName)
-
-	file, err := os.Open(p)
+func openConfig(path string) (*spirali.Config, error) {
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -84,11 +82,12 @@ func openConfig(dir string) (*spirali.Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	c.WithPath(path)
 	return c, nil
 }
 
-func readMetaData(dir string) (*spirali.MetaData, error) {
-	p := filepath.Join(dir, spirali.MetaDataFileName)
+func readMetaData(config *spirali.Config) (*spirali.MetaData, error) {
+	p := filepath.Join(config.Dir(), spirali.MetaDataFileName)
 	file, err := os.Open(p)
 	if err != nil {
 		return nil, err
@@ -102,8 +101,8 @@ func readMetaData(dir string) (*spirali.MetaData, error) {
 	return m, nil
 }
 
-func updateMetaData(m *spirali.MetaData, dir string) error {
-	p := filepath.Join(dir, spirali.MetaDataFileName)
+func updateMetaData(m *spirali.MetaData, config *spirali.Config) error {
+	p := filepath.Join(config.Dir(), spirali.MetaDataFileName)
 	file, err := os.Create(p)
 	if err != nil {
 		return err
