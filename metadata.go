@@ -1,6 +1,7 @@
 package spirali
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 )
@@ -30,7 +31,11 @@ func (m *MetaData) Save(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if _, err := io.WriteString(w, string(b)); err != nil {
+	var buffer bytes.Buffer
+	if err := json.Indent(&buffer, b, "", "  "); err != nil {
+		return err
+	}
+	if _, err := buffer.WriteTo(w); err != nil {
 		return err
 	}
 	return nil

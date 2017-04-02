@@ -57,7 +57,7 @@ func TestMetaData(t *testing.T) {
 			},
 		}
 
-		expect := `{"migrations":[{"version":1,"name":"foo"},{"version":2,"name":"bar"},{"version":3,"name":"baz"}]}`
+		expect := "{\n  \"migrations\": [\n    {\n      \"version\": 1,\n      \"name\": \"foo\"\n    },\n    {\n      \"version\": 2,\n      \"name\": \"bar\"\n    },\n    {\n      \"version\": 3,\n      \"name\": \"baz\"\n    }\n  ]\n}"
 
 		var buf bytes.Buffer
 		err := m.Save(&buf)
