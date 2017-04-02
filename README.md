@@ -1,6 +1,7 @@
 # spirali
 **spirali** is a go based database migration tool.
 
+[![GoDoc](https://godoc.org/github.com/kudohamu/spirali?status.svg)](https://godoc.org/github.com/kudohamu/spirali)
 [![wercker status](https://app.wercker.com/status/bc0b4e372f5f0c80f0a88c0f91410273/s/master "wercker status")](https://app.wercker.com/project/byKey/bc0b4e372f5f0c80f0a88c0f91410273)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
