@@ -17,7 +17,7 @@ type Dir struct {
 }
 
 // NewReadableFromDir ...
-func NewReadableFromDir(basePath string) Readable {
+func NewReadableFromDir(basePath string) *Dir {
 	return &Dir{
 		basePath: basePath,
 	}
@@ -43,7 +43,7 @@ type Bindata struct {
 }
 
 // NewReadableFromBindata ...
-func NewReadableFromBindata(asset func(string) ([]byte, error)) Readable {
+func NewReadableFromBindata(asset func(string) ([]byte, error)) *Bindata {
 	return &Bindata{
 		asset: asset,
 	}
