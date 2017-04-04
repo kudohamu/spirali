@@ -39,7 +39,8 @@ func (d *Dir) Read(path string) ([]byte, error) {
 
 // Bindata represents just `bindata`.
 type Bindata struct {
-	asset func(string) ([]byte, error)
+	asset    func(string) ([]byte, error)
+	basePath string
 }
 
 // NewReadableFromBindata ...
@@ -51,5 +52,11 @@ func NewReadableFromBindata(asset func(string) ([]byte, error)) *Bindata {
 
 // Read ...
 func (b *Bindata) Read(path string) ([]byte, error) {
-	return b.asset(path)
+	return b.asset(filepath.Join(b.basePath, path))
+}
+
+// WithBasePath sets a base path when read data from bindata.
+func (b *Bindata) WithBasePath(basePath string) *Bindata {
+	b.basePath = basePath
+	return b
 }
