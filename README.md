@@ -9,7 +9,7 @@
 
 ## Overview
 
-* Have `create`, `up`, `down` command
+* Have `create`, `up`, `down`, `status` command
 * Be able to use in golang code (this is flexible more than the CLI)
 * Customizable versioning
 * Taking `bindata` into consideration
@@ -52,6 +52,21 @@ Create new migration files.
 $ spirali --path=path/to/your/config/file --env=dev create create_user_table
 ```
 
+### Status
+
+Show current migration status.  
+format: `applied time | migration file name`
+
+```sh
+$ spirali --path=path/to/your/config/file --env=dev status
+migration status of `dev` environment
+==============================================================
+ 2017-04-02 17:47:14 | 20170402174358_create_foo_table
+ 2017-04-04 23:10:10 | 20170402174720_create_bar_table
+ not applied         | 20170404230832_create_baz_table
+==============================================================
+```
+
 ### Up
 
 Apply remaining migrations.
@@ -76,6 +91,8 @@ spirali.Create(vg VersionG, name string, config *Config, metadata *MetaData) (*M
 spirali.Up(metadata *MetaData, config *Config, driver Driver, readable Readable) error
 
 spirali.Down(metadata *MetaData, config *Config, driver Driver, readable Readable) error
+
+spirali.Status(metadata *MetaData, config *Config, driver Driver, w io.Writer) error
 ```
 
 (TODO: More friendly code sample)
