@@ -1,15 +1,24 @@
 package driver
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 // TDriver is driver impl for test.
 // Don't use expect in test.
 type TDriver struct {
 	CountOfExec int
-	Versions    []uint64
+	Rows        []*Row
 	Created     bool
 	JustCreated bool
 	locker      sync.Mutex
+}
+
+// Row is TDriver's row
+type Row struct {
+	Version   uint64
+	CreatedAt time.Time
 }
 
 // Close ...
@@ -32,12 +41,23 @@ func (td *TDriver) Exec(query string) error {
 	return nil
 }
 
+// GetAppliedTimeList returns list of migration applied times.
+func (td *TDriver) GetAppliedTimeList() (map[uint64]time.Time, error) {
+	data := map[uint64]time.Time{}
+
+	for _, r := range td.Rows {
+		data[r.Version] = r.CreatedAt
+	}
+
+	return data, nil
+}
+
 // GetCurrentVersion ...
 func (td *TDriver) GetCurrentVersion() (uint64, error) {
-	if len(td.Versions) == 0 {
+	if len(td.Rows) == 0 {
 		return 0, nil
 	}
-	return td.Versions[len(td.Versions)-1], nil
+	return td.Rows[len(td.Rows)-1].Version, nil
 }
 
 // Open ...
@@ -47,19 +67,22 @@ func (td *TDriver) Open(dsn string) error {
 
 // SetVersion ...
 func (td *TDriver) SetVersion(version uint64) error {
-	td.Versions = append(td.Versions, version)
+	td.Rows = append(td.Rows, &Row{
+		Version:   version,
+		CreatedAt: time.Now(),
+	})
 	return nil
 }
 
 // DeleteVersion ...
 func (td *TDriver) DeleteVersion(version uint64) error {
-	var vs []uint64
-	for _, v := range td.Versions {
-		if v != version {
-			vs = append(vs, v)
+	var rs []*Row
+	for _, r := range td.Rows {
+		if r.Version != version {
+			rs = append(rs, r)
 		}
 	}
-	td.Versions = vs
+	td.Rows = rs
 	return nil
 }
 
@@ -72,4 +95,15 @@ func (td *TDriver) Transaction(fn func() error) error {
 		return err
 	}
 	return nil
+}
+
+// Versions returns only version columns
+func (td *TDriver) Versions() []uint64 {
+	var vs []uint64
+
+	for _, r := range td.Rows {
+		vs = append(vs, r.Version)
+	}
+
+	return vs
 }

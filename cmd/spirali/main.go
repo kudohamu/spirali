@@ -42,6 +42,11 @@ func main() {
 			Usage:   "rollback the latest migration",
 			Action:  Down,
 		},
+		cli.Command{
+			Name:   "status",
+			Usage:  "show current migration status",
+			Action: Status,
+		},
 	}
 
 	app.Run(os.Args)

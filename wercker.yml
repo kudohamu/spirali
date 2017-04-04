@@ -32,6 +32,10 @@ build:
         code: |
           go get -u github.com/golang/dep/...
     - script:
+        name: install golint
+        code: |
+          go get -u github.com/golang/lint/golint
+    - script:
         name: dep ensure
         code: |
           dep ensure
@@ -41,6 +45,13 @@ build:
         name: go build
         code: |
           make
+
+    # lint the project
+    - script:
+        name: go lint and vet
+        code: |
+          make lint
+          make vet
 
     # Test the project
     - script:

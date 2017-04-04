@@ -1,6 +1,10 @@
 package spirali
 
-import "github.com/kudohamu/spirali/internal/driver"
+import (
+	"time"
+
+	"github.com/kudohamu/spirali/internal/driver"
+)
 
 // Driver is interface of database driver.
 type Driver interface {
@@ -8,6 +12,7 @@ type Driver interface {
 	CreateVersionTableIfNotExists() error
 	DeleteVersion(version uint64) error
 	Exec(query string) error
+	GetAppliedTimeList() (map[uint64]time.Time, error)
 	GetCurrentVersion() (uint64, error)
 	Open(dsn string) error
 	SetVersion(version uint64) error

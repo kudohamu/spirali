@@ -9,7 +9,17 @@ all: $(TARGETS)
 $(TARGETS):
 	@go install $@
 
-.PHONY: test
+.PHONY: lint vet test
+
+lint:
+	@lint=`golint $(shell ls -d | grep -v "vendor") 2>&1`; \
+		lint=`echo "$$lint" | grep -E -v -e vendor/.+\.go`; \
+		echo "$$lint"; if [ "$$lint" != "" ]; then exit 1; fi
+
+vet:
+	@vet=`go tool vet -all -structtags -tests $(shell ls -d */ | grep -v "vendor") 2>&1`; \
+		vet=`echo "$$vet" | grep -E -v -e vendor/.+\.go`; \
+		echo "$$vet"; if [ "$$vet" != "" ]; then exit 1; fi
 
 test:
 	@go test -v $(TARGET_FILES)
