@@ -12,6 +12,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "spirali"
+	app.Version = "v1.0.0"
 	app.Usage = "golang based database migration tool"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
