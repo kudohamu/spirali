@@ -37,9 +37,7 @@ func Up(c *cli.Context) {
 	if err != nil {
 		panic(err)
 	}
-	if e := config.WithEnv(env); e != nil {
-		panic(e)
-	}
+	config.WithEnv(env)
 	metadata, err := readMetaData(config)
 	if err != nil {
 		panic(err)

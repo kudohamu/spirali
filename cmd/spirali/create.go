@@ -41,9 +41,7 @@ func Create(c *cli.Context) {
 	if err != nil {
 		panic(err)
 	}
-	if e := config.WithEnv(env); e != nil {
-		panic(e)
-	}
+	config.WithEnv(env)
 	if err := initializeMetaDataFileIfNotExist(config); err != nil {
 		panic(err)
 	}
