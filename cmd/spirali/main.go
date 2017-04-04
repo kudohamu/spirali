@@ -48,7 +48,11 @@ func main() {
 }
 
 func initializeMetaDataFileIfNotExist(config *spirali.Config) error {
-	p := filepath.Join(config.Dir(), spirali.MetaDataFileName)
+	dir, err := config.Dir()
+	if err != nil {
+		panic(err)
+	}
+	p := filepath.Join(dir, spirali.MetaDataFileName)
 
 	if _, err := os.Stat(p); err == nil {
 		return nil
@@ -87,7 +91,11 @@ func openConfig(path string) (*spirali.Config, error) {
 }
 
 func readMetaData(config *spirali.Config) (*spirali.MetaData, error) {
-	p := filepath.Join(config.Dir(), spirali.MetaDataFileName)
+	dir, err := config.Dir()
+	if err != nil {
+		panic(err)
+	}
+	p := filepath.Join(dir, spirali.MetaDataFileName)
 	file, err := os.Open(p)
 	if err != nil {
 		return nil, err
@@ -102,7 +110,11 @@ func readMetaData(config *spirali.Config) (*spirali.MetaData, error) {
 }
 
 func updateMetaData(m *spirali.MetaData, config *spirali.Config) error {
-	p := filepath.Join(config.Dir(), spirali.MetaDataFileName)
+	dir, err := config.Dir()
+	if err != nil {
+		panic(err)
+	}
+	p := filepath.Join(dir, spirali.MetaDataFileName)
 	file, err := os.Create(p)
 	if err != nil {
 		return err

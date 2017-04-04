@@ -16,7 +16,11 @@ type Driver interface {
 
 // NewDriver separates out actual sql driver.
 func NewDriver(c *Config) (Driver, error) {
-	switch c.Driver() {
+	d, err := c.Driver()
+	if err != nil {
+		return nil, err
+	}
+	switch d {
 	case "mysql":
 		return &driver.Mysql{}, nil
 	}

@@ -48,7 +48,11 @@ func Down(c *cli.Context) {
 	if err != nil {
 		panic(err)
 	}
-	readable := spirali.NewReadableFromDir(config.Dir())
+	dir, err := config.Dir()
+	if err != nil {
+		panic(err)
+	}
+	readable := spirali.NewReadableFromDir(dir)
 
 	// try to roll back migrations.
 	if err := spirali.Down(metadata, config, driver, readable); err != nil {

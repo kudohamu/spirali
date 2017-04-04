@@ -47,19 +47,16 @@ prod:
 
 	t.Run("WithEnv", func(t *testing.T) {
 		cases := []struct {
-			env         string
-			expectEnv   string
-			expectError error
+			env    string
+			expect string
 		}{
 			{
-				env:         "dev",
-				expectEnv:   "dev",
-				expectError: nil,
+				env:    "dev",
+				expect: "dev",
 			},
 			{
-				env:         "prod",
-				expectEnv:   "",
-				expectError: ErrEnvNotFound,
+				env:    "prod",
+				expect: "prod",
 			},
 		}
 
@@ -69,9 +66,8 @@ prod:
 					"dev": &specificConfig{},
 				},
 			}
-			err := config.WithEnv(c.env)
-			assert.Equal(t, c.expectEnv, config.Env)
-			assert.Equal(t, c.expectError, err)
+			config.WithEnv(c.env)
+			assert.Equal(t, c.expect, config.Env)
 		}
 	})
 
@@ -92,85 +88,98 @@ prod:
 	t.Run("Driver", func(t *testing.T) {
 		config := &Config{
 			specificConfigs: map[string]*specificConfig{
-				"dev":  &specificConfig{Driver: "foo"},
-				"prod": &specificConfig{Driver: "bar"},
+				"dev": &specificConfig{Driver: "foo"},
 			},
 		}
 
 		cases := []struct {
-			env    string
-			expect string
+			env          string
+			expectDriver string
+			expectError  error
 		}{
 			{
-				env:    "dev",
-				expect: "foo",
+				env:          "dev",
+				expectDriver: "foo",
+				expectError:  nil,
 			},
 			{
-				env:    "prod",
-				expect: "bar",
+				env:          "prod",
+				expectDriver: "",
+				expectError:  ErrEnvNotFound,
 			},
 		}
 
 		for _, c := range cases {
 			config.WithEnv(c.env)
-			assert.Equal(t, c.expect, config.Driver())
+			d, err := config.Driver()
+			assert.Equal(t, c.expectDriver, d)
+			assert.Equal(t, c.expectError, err)
 		}
 	})
 
 	t.Run("Dsn", func(t *testing.T) {
 		config := &Config{
 			specificConfigs: map[string]*specificConfig{
-				"dev":  &specificConfig{Dsn: "hoge"},
-				"prod": &specificConfig{Dsn: "huga"},
+				"dev": &specificConfig{Dsn: "hoge"},
 			},
 		}
 
 		cases := []struct {
-			env    string
-			expect string
+			env         string
+			expectDsn   string
+			expectError error
 		}{
 			{
-				env:    "dev",
-				expect: "hoge",
+				env:         "dev",
+				expectDsn:   "hoge",
+				expectError: nil,
 			},
 			{
-				env:    "prod",
-				expect: "huga",
+				env:         "prod",
+				expectDsn:   "",
+				expectError: ErrEnvNotFound,
 			},
 		}
 
 		for _, c := range cases {
 			config.WithEnv(c.env)
-			assert.Equal(t, c.expect, config.Dsn())
+			d, err := config.Dsn()
+			assert.Equal(t, c.expectDsn, d)
+			assert.Equal(t, c.expectError, err)
 		}
 	})
 
 	t.Run("Dir", func(t *testing.T) {
 		config := &Config{
 			specificConfigs: map[string]*specificConfig{
-				"dev":  &specificConfig{Dir: "hoge"},
-				"prod": &specificConfig{Dir: "huga"},
+				"dev": &specificConfig{Dir: "hoge"},
 			},
 		}
+		wd, _ := os.Getwd()
 
 		cases := []struct {
-			env    string
-			expect string
+			env         string
+			expectDir   string
+			expectError error
 		}{
 			{
-				env:    "dev",
-				expect: "hoge",
+				env:         "dev",
+				expectDir:   filepath.Join(wd, "hoge"),
+				expectError: nil,
 			},
 			{
-				env:    "prod",
-				expect: "huga",
+				env:         "prod",
+				expectDir:   "",
+				expectError: ErrEnvNotFound,
 			},
 		}
 
 		for _, c := range cases {
 			config.WithEnv(c.env)
-			wd, _ := os.Getwd()
-			assert.Equal(t, filepath.Join(wd, c.expect), config.Dir())
+			d, err := config.Dir()
+
+			assert.Equal(t, c.expectDir, d)
+			assert.Equal(t, c.expectError, err)
 		}
 	})
 }
