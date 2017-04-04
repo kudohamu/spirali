@@ -16,8 +16,6 @@ func Status(c *cli.Context) {
 		err := recover()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err.(error).Error())
-		} else {
-			fmt.Fprintf(os.Stdout, "applied migrations\n")
 		}
 	}()
 
