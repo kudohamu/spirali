@@ -2,10 +2,13 @@ package spirali
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 )
+
+const separator = "=============================================================="
 
 // Create generates new migration files.
 func Create(vg VersionG, name string, config *Config, metadata *MetaData) (*MetaData, error) {
@@ -93,6 +96,52 @@ func Down(metadata *MetaData, config *Config, driver Driver, readable Readable) 
 		}
 		return nil
 	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Status writes current migration status to io.Writer.
+func Status(metadata *MetaData, config *Config, driver Driver, w io.Writer) error {
+	dsn, err := config.Dsn()
+	if err != nil {
+		return err
+	}
+	metadata.Migrations.sort()
+	if err := driver.Open(dsn); err != nil {
+		return err
+	}
+	defer driver.Close()
+
+	if err := driver.CreateVersionTableIfNotExists(); err != nil {
+		return err
+	}
+
+	appliedTimeList, err := driver.GetAppliedTimeList()
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.WriteString(w, fmt.Sprintf("migration status of `%s` environment\n%s\n", config.Env, separator)); err != nil {
+		return err
+	}
+
+	for _, m := range metadata.Migrations {
+		appliedTime, found := appliedTimeList[m.Version]
+		var msg string
+		if found {
+			msg = fmt.Sprintf(" %s | %d_%s\n", appliedTime.Format("2006-01-02 15:04:05"), m.Version, m.Name)
+		} else {
+			msg = fmt.Sprintf(" not applied         | %d_%s\n", m.Version, m.Name)
+		}
+
+		if _, err := io.WriteString(w, msg); err != nil {
+			return err
+		}
+	}
+
+	if _, err := io.WriteString(w, separator+"\n"); err != nil {
 		return err
 	}
 

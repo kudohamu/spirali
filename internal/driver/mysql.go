@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql" //use mysql
 	"github.com/k0kubun/pp"
@@ -64,12 +65,38 @@ func (m *Mysql) Exec(query string) error {
 	return nil
 }
 
+// GetAppliedTimeList returns list of migration applied times.
+func (m *Mysql) GetAppliedTimeList() (map[uint64]time.Time, error) {
+	query := fmt.Sprintf("SELECT version, created_at FROM %s order by version asc", schemaManagementTableName)
+
+	data := map[uint64]time.Time{}
+
+	rows, err := m.conn.Query(query)
+	if err != nil {
+		return data, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var version uint64
+		var createdAt time.Time
+
+		if err := rows.Scan(&version, &createdAt); err != nil {
+			return data, nil
+		}
+
+		data[version] = createdAt
+	}
+
+	return data, nil
+}
+
 // GetCurrentVersion returns current migration version of database.
 func (m *Mysql) GetCurrentVersion() (uint64, error) {
 	query := fmt.Sprintf("select version from %s order by version desc limit 1", schemaManagementTableName)
 
 	var version uint64
-	err := m.tx.QueryRow(query).Scan(&version)
+	err := m.conn.QueryRow(query).Scan(&version)
 
 	if err == sql.ErrNoRows {
 		return 0, nil

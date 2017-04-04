@@ -86,25 +86,28 @@ func TestMigration(t *testing.T) {
 
 		t.Run("when current version is 0", func(t *testing.T) {
 			driver := &driver.TDriver{
-				Created:  true,
-				Versions: []uint64{},
+				Created: true,
+				Rows:    []*driver.Row{},
 			}
 			version := uint64(0)
 			err := ms.Up(driver, version, readable)
 			assert.NoError(t, err)
-			assert.Equal(t, []uint64{1, 2, 3}, driver.Versions)
+			assert.Equal(t, []uint64{1, 2, 3}, driver.Versions())
 			assert.Equal(t, 3, driver.CountOfExec)
 		})
 
 		t.Run("when current version is not 0", func(t *testing.T) {
 			driver := &driver.TDriver{
-				Created:  true,
-				Versions: []uint64{1, 2},
+				Created: true,
+				Rows: []*driver.Row{
+					&driver.Row{Version: 1},
+					&driver.Row{Version: 2},
+				},
 			}
 			version := uint64(2)
 			err := ms.Up(driver, version, readable)
 			assert.NoError(t, err)
-			assert.Equal(t, []uint64{1, 2, 3}, driver.Versions)
+			assert.Equal(t, []uint64{1, 2, 3}, driver.Versions())
 			assert.Equal(t, 1, driver.CountOfExec)
 		})
 	})
@@ -119,8 +122,8 @@ func TestMigration(t *testing.T) {
 
 		t.Run("when current version is 0", func(t *testing.T) {
 			driver := &driver.TDriver{
-				Created:  true,
-				Versions: []uint64{},
+				Created: true,
+				Rows:    []*driver.Row{},
 			}
 			err := ms.Down(driver, readable)
 			assert.Error(t, err)
@@ -131,8 +134,8 @@ func TestMigration(t *testing.T) {
 			ms := Migrations{}
 
 			driver := &driver.TDriver{
-				Created:  true,
-				Versions: []uint64{},
+				Created: true,
+				Rows:    []*driver.Row{},
 			}
 			err := ms.Down(driver, readable)
 			assert.Error(t, err)
@@ -141,12 +144,15 @@ func TestMigration(t *testing.T) {
 
 		t.Run("when valid state", func(t *testing.T) {
 			driver := &driver.TDriver{
-				Created:  true,
-				Versions: []uint64{1, 2},
+				Created: true,
+				Rows: []*driver.Row{
+					&driver.Row{Version: 1},
+					&driver.Row{Version: 2},
+				},
 			}
 			err := ms.Down(driver, readable)
 			assert.NoError(t, err)
-			assert.Equal(t, []uint64{1}, driver.Versions)
+			assert.Equal(t, []uint64{1}, driver.Versions())
 			assert.Equal(t, 1, driver.CountOfExec)
 		})
 	})
