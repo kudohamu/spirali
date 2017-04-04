@@ -13,8 +13,12 @@ func Create(vg VersionG, name string, config *Config, metadata *MetaData) (*Meta
 	if err != nil {
 		return nil, err
 	}
+	dir, err := config.Dir()
+	if err != nil {
+		return nil, err
+	}
 
-	upfile, err := os.Create(filepath.Join(config.Dir(), m.GetUpFileName()))
+	upfile, err := os.Create(filepath.Join(dir, m.GetUpFileName()))
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +27,7 @@ func Create(vg VersionG, name string, config *Config, metadata *MetaData) (*Meta
 	defer upWriter.Flush()
 	io.WriteString(upWriter, "-- write SQL for applying this migration.")
 
-	downfile, err := os.Create(filepath.Join(config.Dir(), m.GetDownFileName()))
+	downfile, err := os.Create(filepath.Join(dir, m.GetDownFileName()))
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +43,11 @@ func Create(vg VersionG, name string, config *Config, metadata *MetaData) (*Meta
 
 // Up applies migrations not applied.
 func Up(metadata *MetaData, config *Config, driver Driver, readable Readable) error {
-
-	if err := driver.Open(config.Dsn()); err != nil {
+	dsn, err := config.Dsn()
+	if err != nil {
+		return err
+	}
+	if err := driver.Open(dsn); err != nil {
 		return err
 	}
 	defer driver.Close()
@@ -68,7 +75,11 @@ func Up(metadata *MetaData, config *Config, driver Driver, readable Readable) er
 
 // Down rolls back the latest migration.
 func Down(metadata *MetaData, config *Config, driver Driver, readable Readable) error {
-	if err := driver.Open(config.Dsn()); err != nil {
+	dsn, err := config.Dsn()
+	if err != nil {
+		return err
+	}
+	if err := driver.Open(dsn); err != nil {
 		return err
 	}
 	defer driver.Close()

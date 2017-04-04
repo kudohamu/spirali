@@ -31,33 +31,38 @@ func ReadConfig(r io.Reader) (*Config, error) {
 }
 
 // WithEnv sets env to config.
-func (c *Config) WithEnv(env string) error {
-	for key := range c.specificConfigs {
-		if key == env {
-			c.Env = env
-			return nil
-		}
-	}
-	return ErrEnvNotFound
+func (c *Config) WithEnv(env string) *Config {
+	c.Env = env
+	return c
 }
 
 // WithPath sets path to config.
-func (c *Config) WithPath(path string) {
+func (c *Config) WithPath(path string) *Config {
 	c.Path = path
+	return c
 }
 
 // Driver returns driver of current env.
-func (c *Config) Driver() string {
-	return c.specificConfigs[c.Env].Driver
+func (c *Config) Driver() (string, error) {
+	if sc, found := c.specificConfigs[c.Env]; found {
+		return sc.Driver, nil
+	}
+	return "", ErrEnvNotFound
 }
 
 // Dsn returns dsn of current env.
-func (c *Config) Dsn() string {
-	return c.specificConfigs[c.Env].Dsn
+func (c *Config) Dsn() (string, error) {
+	if sc, found := c.specificConfigs[c.Env]; found {
+		return sc.Dsn, nil
+	}
+	return "", ErrEnvNotFound
 }
 
 // Dir returns migration files directory.
-func (c *Config) Dir() string {
-	currentDir, _ := os.Getwd()
-	return filepath.Join(currentDir, c.specificConfigs[c.Env].Dir)
+func (c *Config) Dir() (string, error) {
+	if sc, found := c.specificConfigs[c.Env]; found {
+		currentDir, _ := os.Getwd()
+		return filepath.Join(currentDir, sc.Dir), nil
+	}
+	return "", ErrEnvNotFound
 }
